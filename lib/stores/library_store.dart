@@ -12,7 +12,8 @@ class LibraryStore extends ChangeNotifier {
   static const String _favoritesKey = 'favorites_v1';
   static const String _progressKey = 'reading_progress_v1';
 
-  final Set<int> _favorites = {};
+  /// Book ids in the order they were favorited (oldest first).
+  final List<int> _favorites = [];
   final Map<int, ReadingProgress> _progress = {};
 
   Future<void> load() async {
@@ -20,15 +21,18 @@ class LibraryStore extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
 
       final favs = prefs.getStringList(_favoritesKey) ?? const [];
-      _favorites.addAll(favs.map(int.tryParse).whereType<int>());
+      for (final id in favs.map(int.tryParse).whereType<int>()) {
+        if (!_favorites.contains(id)) _favorites.add(id);
+      }
 
       final raw = prefs.getString(_progressKey);
       if (raw != null) {
         (jsonDecode(raw) as Map<String, dynamic>).forEach((id, json) {
           final key = int.tryParse(id);
           if (key != null) {
-            _progress[key] =
-                ReadingProgress.fromJson(json as Map<String, dynamic>);
+            _progress[key] = ReadingProgress.fromJson(
+              json as Map<String, dynamic>,
+            );
           }
         });
       }
@@ -42,8 +46,11 @@ class LibraryStore extends ChangeNotifier {
 
   bool isFavorite(int bookId) => _favorites.contains(bookId);
 
-  List<Book> favoritesOf(List<Book> books) =>
-      books.where((b) => _favorites.contains(b.id)).toList();
+  /// Most recently favorited first.
+  List<Book> favoritesOf(List<Book> books) {
+    final byId = {for (final b in books) b.id: b};
+    return _favorites.reversed.map((id) => byId[id]).whereType<Book>().toList();
+  }
 
   Future<void> toggleFavorite(int bookId) async {
     if (!_favorites.remove(bookId)) _favorites.add(bookId);

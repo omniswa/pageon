@@ -305,7 +305,7 @@ class _ReaderPageState extends State<ReaderPage> {
               style: style,
               onPressed: atFirst ? null : () => _goTo(_currentIndex - 1),
               icon: const Icon(Icons.chevron_left_rounded),
-              label: const Text('Previous'),
+              label: const Text('Prev'),
             ),
             const Spacer(),
             Text(
@@ -390,7 +390,7 @@ class _ChapterViewState extends State<_ChapterView> {
       onNotification: _onScroll,
       child: SingleChildScrollView(
         controller: _controller,
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
+        padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

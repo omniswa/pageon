@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_scope.dart';
+import '../core/app_theme.dart';
 import '../widgets/book_card.dart';
 import 'placeholder_page.dart';
 
@@ -12,25 +13,49 @@ class FavoritesPage extends StatelessWidget {
     final scope = AppScope.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Favorites',
-            style: TextStyle(fontWeight: FontWeight.w700)),
-      ),
-      body: ListenableBuilder(
-        listenable: Listenable.merge([scope.books, scope.library]),
-        builder: (context, _) {
-          final favorites = scope.library.favoritesOf(scope.books.books);
-          if (favorites.isEmpty) {
-            return const EmptyState(
-              icon: Icons.favorite_border_rounded,
-              title: 'No favorites yet',
-              message: 'Tap the heart on any book to save it here.',
+      body: SafeArea(
+        bottom: false,
+        child: ListenableBuilder(
+          listenable: Listenable.merge([scope.books, scope.library]),
+          builder: (context, _) {
+            // Most recently favorited first.
+            final favorites = scope.library.favoritesOf(scope.books.books);
+
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Favorites', style: AppText.display(34)),
+                        const SizedBox(height: 6),
+                        Text(
+                          favorites.isEmpty
+                              ? 'Books you love, saved in one place'
+                              : '${favorites.length} saved · newest first',
+                          style: const TextStyle(color: AppColors.muted),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (favorites.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: EmptyState(
+                      icon: Icons.favorite_border_rounded,
+                      title: 'No favorites yet',
+                      message: 'Tap the heart on any book to save it here.',
+                    ),
+                  )
+                else
+                  SliverBookGrid(books: favorites),
+              ],
             );
-          }
-          return CustomScrollView(
-            slivers: [SliverBookGrid(books: favorites)],
-          );
-        },
+          },
+        ),
       ),
     );
   }

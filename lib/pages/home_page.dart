@@ -31,9 +31,12 @@ class HomePage extends StatelessWidget {
               );
             }
 
-            final continueBook = scope.library.lastReadOf(store.books);
+            // Last book in books.json shows first.
+            final books = store.books.reversed.toList();
+            final continueBook = scope.library.lastReadOf(books);
 
             return RefreshIndicator(
+              color: AppColors.accent,
               onRefresh: () async {
                 final message = await store.refresh();
                 if (message != null && context.mounted) {
@@ -50,8 +53,10 @@ class HomePage extends StatelessWidget {
                     SliverToBoxAdapter(
                       child: _ContinueReadingCard(book: continueBook),
                     ),
-                  const SliverToBoxAdapter(child: _SectionTitle('Library')),
-                  SliverBookGrid(books: store.books),
+                  SliverToBoxAdapter(
+                    child: _SectionTitle('Library', books.length),
+                  ),
+                  SliverBookGrid(books: books),
                 ],
               ),
             );
@@ -68,20 +73,21 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'PAGEON Archive',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 2,
-                ),
+          const Text(
+            'PAGEON ARCHIVE',
+            style: TextStyle(
+              color: AppColors.accent,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 2.4,
+            ),
           ),
-          const SizedBox(height: 2),
-          Text('Find your next chapter',
-              style: TextStyle(color: Colors.grey.shade600)),
+          const SizedBox(height: 8),
+          Text('Find your\nnext chapter', style: AppText.display(36)),
         ],
       ),
     );
@@ -89,18 +95,36 @@ class _Header extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
+  const _SectionTitle(this.text, this.count);
   final String text;
+  final int count;
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 4),
-        child: Text(text,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontWeight: FontWeight.w700)),
-      );
+    padding: const EdgeInsets.fromLTRB(20, 28, 20, 8),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(text, style: AppText.display(24)),
+        const SizedBox(width: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            '$count',
+            style: const TextStyle(
+              color: AppColors.accent,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _ContinueReadingCard extends StatelessWidget {
@@ -110,79 +134,139 @@ class _ContinueReadingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = AppScope.of(context).library.progressFor(book.id)!;
+    final percent = (progress.fraction * 100).round();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: Material(
-        color: AppColors.ink,
-        borderRadius: BorderRadius.circular(20),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => openReader(context, book),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: CachedNetworkImage(
-                    imageUrl: book.cover,
-                    width: 64,
-                    height: 88,
-                    fit: BoxFit.cover,
-                    errorWidget: (_, _, _) => Container(
-                      width: 64,
-                      height: 88,
-                      color: AppColors.placeholder,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF2B2620), Color(0xFF5A3B22)],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.ink.withValues(alpha: 0.28),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          borderRadius: BorderRadius.circular(24),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => openReader(context, book),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black38,
+                          blurRadius: 12,
+                          offset: Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: CachedNetworkImage(
+                        imageUrl: book.cover,
+                        width: 72,
+                        height: 100,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, _, _) => Container(
+                          width: 72,
+                          height: 100,
+                          color: AppColors.placeholder,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('CONTINUE READING',
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'CONTINUE READING',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.6),
-                            fontSize: 11,
-                            letterSpacing: 1.2,
-                            fontWeight: FontWeight.w600,
-                          )),
-                      const SizedBox(height: 4),
-                      Text(book.title,
+                            fontSize: 10.5,
+                            letterSpacing: 1.6,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          book.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          )),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Chapter ${progress.chapter + 1} of ${progress.totalChapters}',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 12.5,
+                          style: AppText.display(18, color: Colors.white),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress.fraction,
-                          minHeight: 4,
-                          backgroundColor: Colors.white24,
-                          color: Colors.white,
+                        const SizedBox(height: 4),
+                        Text(
+                          'Chapter ${progress.chapter + 1} of ${progress.totalChapters}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 12.5,
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: progress.fraction,
+                                  minHeight: 5,
+                                  backgroundColor: Colors.white24,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              '$percent%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(Icons.play_circle_fill_rounded,
-                    color: Colors.white, size: 36),
-              ],
+                  const SizedBox(width: 12),
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: AppColors.ink,
+                      size: 28,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -204,11 +288,17 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey.shade400),
+            Icon(
+              Icons.cloud_off_rounded,
+              size: 48,
+              color: Colors.grey.shade400,
+            ),
             const SizedBox(height: 12),
-            Text(message,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade700)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
             const SizedBox(height: 16),
             FilledButton(onPressed: onRetry, child: const Text('Try again')),
           ],
