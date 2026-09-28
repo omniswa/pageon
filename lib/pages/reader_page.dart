@@ -160,8 +160,11 @@ class _ReaderPageState extends State<ReaderPage> {
                   ),
                 ),
                 trailing: selected
-                    ? Icon(Icons.menu_book_rounded,
-                        size: 18, color: s.theme.text)
+                    ? Icon(
+                        Icons.menu_book_rounded,
+                        size: 18,
+                        color: s.theme.text,
+                      )
                     : null,
                 onTap: () {
                   Navigator.pop(context);
@@ -245,11 +248,17 @@ class _ReaderPageState extends State<ReaderPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline_rounded,
-                  size: 48, color: color.withValues(alpha: 0.5)),
+              Icon(
+                Icons.error_outline_rounded,
+                size: 48,
+                color: color.withValues(alpha: 0.5),
+              ),
               const SizedBox(height: 12),
-              Text(_error!,
-                  textAlign: TextAlign.center, style: TextStyle(color: color)),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: color),
+              ),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: () => _load(force: true),
@@ -301,8 +310,10 @@ class _ReaderPageState extends State<ReaderPage> {
             const Spacer(),
             Text(
               '${_currentIndex + 1} / ${_chapters.length}',
-              style:
-                  TextStyle(color: t.text.withValues(alpha: 0.6), fontSize: 12),
+              style: TextStyle(
+                color: t.text.withValues(alpha: 0.6),
+                fontSize: 12,
+              ),
             ),
             const Spacer(),
             TextButton(
@@ -365,7 +376,8 @@ class _ChapterViewState extends State<_ChapterView> {
     if (n is ScrollEndNotification && n.depth == 0) {
       final max = n.metrics.maxScrollExtent;
       widget.onScrollSettled(
-          max > 0 ? (n.metrics.pixels / max).clamp(0.0, 1.0) : 0);
+        max > 0 ? (n.metrics.pixels / max).clamp(0.0, 1.0) : 0,
+      );
     }
     return false;
   }
@@ -378,7 +390,7 @@ class _ChapterViewState extends State<_ChapterView> {
       onNotification: _onScroll,
       child: SingleChildScrollView(
         controller: _controller,
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 48),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
